@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/{allPaths=**} {
+      allow get: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId
+        && isValidContentType(request.resource)
+        && isValidFileExtension(request.resource.name)
+        && isValidFileSize(request.resource);
+    }
+  }
+  function isValidContentType(data) {
+    return data.contentType in ['image/png'];
+  }
+
+  function isValidFileExtension(fileName) {
+    return fileName.matches('(?:.*[.]png)');
+  }
+
+  function isValidFileSize(data) {
+    return data.size < 50 * 1024
+  }
+}
